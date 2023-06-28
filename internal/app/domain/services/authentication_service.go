@@ -3,26 +3,45 @@ package services
 import (
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/models"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/repositories"
+	"github.com/google/uuid"     // for generating random IDs
+	"golang.org/x/crypto/bcrypt" // for hashing passwords
 )
 
 // AuthenticationService represents a service for authentication-related operations.
 type AuthenticationService struct {
-	UserRepository  repositories.UserRepository
-	TokenRepository repositories.TokenRepository
+	userRepository  repositories.UserRepository
+	tokenRepository repositories.TokenRepository
 }
 
 // NewAuthenticationService creates a new instance of AuthenticationService.
 func NewAuthenticationService(userRepository repositories.UserRepository, tokenRepository repositories.TokenRepository) *AuthenticationService {
 	return &AuthenticationService{
-		UserRepository:  userRepository,
-		TokenRepository: tokenRepository,
+		userRepository:  userRepository,
+		tokenRepository: tokenRepository,
 	}
 }
 
-// RegisterUser registers a new user.
-func (s *AuthenticationService) RegisterUser(user *models.User) error {
-	// Implement user registration logic
-	return nil
+// RegisterUser registers a new user and returns the created user.
+func (s *AuthenticationService) RegisterUser(user *models.User) (*models.User, error) {
+	// Generate a random ID for the user
+	user.ID = uuid.New().String()
+
+	// Hash the user's password before storing it
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set the hashed password for the user
+	user.Password = string(hashedPassword)
+
+	// Save the user in the database
+	err = s.userRepository.CreateUser(user)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // AuthenticateUser performs user authentication.

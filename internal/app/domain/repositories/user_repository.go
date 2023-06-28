@@ -1,15 +1,28 @@
 package repositories
 
-// UserRepository represents a repository for user-related operations.
+import (
+	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/models"
+	"gorm.io/gorm"
+)
+
+// UserRepository handles user data operations.
 type UserRepository struct {
-	// ...
+	db *gorm.DB
 }
 
-// NewUserRepository creates a new instance of UserRepository.
-func NewUserRepository() *UserRepository {
+func NewUserRepository(db *gorm.DB) *UserRepository {
 	return &UserRepository{
-		// ...
+		db: db,
 	}
 }
 
-// Implement the repository methods for user operations.
+// CreateUser creates a new user in the database.
+func (r *UserRepository) CreateUser(user *models.User) error {
+	// Implement logic to save the user in the database using the provided db connection and GORM
+	err := r.db.Create(user).Error
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

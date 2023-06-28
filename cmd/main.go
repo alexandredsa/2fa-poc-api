@@ -6,11 +6,24 @@ import (
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/repositories"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/services"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers"
+	"github.com/alexandredsa/2fa-poc-api/pkg/config"
 	"github.com/alexandredsa/2fa-poc-api/pkg/http"
 )
 
 func main() {
-	userRepository := repositories.NewUserRepository()
+	// Load the database configuration
+	dbConfig, err := config.LoadDatabaseConfig()
+	if err != nil {
+		log.Fatalf("Failed to load database configuration: %v", err)
+	}
+
+	// Establish the database connection
+	db, err := config.NewDatabaseConnection(dbConfig)
+	if err != nil {
+		log.Fatalf("Failed to connect to the database: %v", err)
+	}
+
+	userRepository := repositories.NewUserRepository(db)
 	tokenRepository := repositories.NewTokenRepository()
 
 	authService := services.NewAuthenticationService(*userRepository, *tokenRepository)
