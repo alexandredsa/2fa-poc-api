@@ -46,7 +46,26 @@ Before running the project, ensure that the following dependencies are installed
    docker-compose up --build
    ```
 
-4. The API should now be running on `http://localhost:8080`. You can test the endpoints using tools like cURL or Postman.
+4. The API should now be running on `http://localhost:8080`. You can test the endpoints using tools like cURL, Insomnia, Postman, etc.
+
+
+## Makefile Commands
+
+The following commands are available in the Makefile:
+
+- `build`: Build the application.
+- `run`: Run the application.
+- `test`: Run the tests.
+- `test-coverage-html`: Generate test coverage HTML report.
+- `docker-build`: Build the Docker image.
+- `docker-run`: Run the Docker container.
+- `docker-stop`: Stop and remove the Docker container.
+- `docker-clean`: Remove the Docker container (if stopped).
+- `docker-up`: Start the application using Docker Compose.
+- `docker-down`: Stop and remove the Docker containers created by Docker Compose.
+
+To execute a command, run `make <command>` in the terminal, where `<command>` is the desired command from the list above. For example, to build the application, run `make build`.
+
 
 ## API Endpoints
 
