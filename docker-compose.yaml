@@ -7,10 +7,16 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      - postgres
       - cache
-  db:
-    image: postgres:13
+    environment:
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: 2fa-api
+      DB_PASSWORD: 2fa_local_db
+      DB_NAME: 2fa-api
+  postgres:
+    image: postgres:13.11-alpine3.18
     environment:
       POSTGRES_USER: 2fa-api
       POSTGRES_PASSWORD: 2fa_local_db

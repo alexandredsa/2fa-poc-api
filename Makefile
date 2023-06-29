@@ -34,6 +34,11 @@ docker-stop:
 	@docker stop $(DOCKER_CONTAINER_NAME)
 	@docker rm $(DOCKER_CONTAINER_NAME)
 
+.PHONY: docker-build-run
+docker-build-run:
+	@make docker-build
+	@docker-compose up -d
+
 .PHONY: docker-clean
 docker-clean:
 	@docker rm $(DOCKER_CONTAINER_NAME)
