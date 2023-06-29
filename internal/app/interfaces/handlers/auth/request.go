@@ -8,3 +8,9 @@ type RegisterRequest struct {
 	Email    string `json:"email"`
 	Phone    string `json:"phone"`
 }
+
+// LoginRequest represents user credentials.
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}

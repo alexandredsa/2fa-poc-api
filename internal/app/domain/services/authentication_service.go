@@ -44,6 +44,17 @@ func (s *AuthenticationService) RegisterUser(user *models.User) (*models.User, e
 	return user, nil
 }
 
+// GetUserByUsername retrieves a user by their username.
+func (s *AuthenticationService) GetUserByUsername(username string) (*models.User, error) {
+	user, err := s.userRepository.GetUserByUsername(username)
+	if err != nil {
+		// Handle any errors that occurred during the retrieval
+		return nil, err
+	}
+
+	return user, nil
+}
+
 // AuthenticateUser performs user authentication.
 func (s *AuthenticationService) AuthenticateUser(loginRequest *models.LoginRequest) (*models.Token, error) {
 	// Implement user authentication logic

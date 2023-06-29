@@ -30,3 +30,15 @@ func (r *UserRepository) CreateUser(user *models.User) error {
 
 	return nil
 }
+
+// GetUserByUsername retrieves a user by their username from the database.
+func (r *UserRepository) GetUserByUsername(username string) (*models.User, error) {
+	var user models.User
+	if err := r.db.Where("username = ?", username).First(&user).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil // User not found
+		}
+		return nil, err
+	}
+	return &user, nil
+}

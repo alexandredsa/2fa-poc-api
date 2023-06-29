@@ -25,3 +25,10 @@ func NewRegisterResponse(user models.User, message string) RegisterResponse {
 
 	return r
 }
+
+type LoginResponse struct {
+	AccessToken      string   `json:"access_token"`
+	TokenType        string   `json:"token_type"`
+	ExpiresIn        int64    `json:"expires_in"`
+	TwoFAValidations []string `json:"2fa_validations"`
+}

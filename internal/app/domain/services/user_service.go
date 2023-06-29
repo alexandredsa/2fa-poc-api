@@ -28,9 +28,3 @@ func (s *UserService) GetUserByID(userID int) (*models.User, error) {
 	// Implement user retrieval logic
 	return nil, nil
 }
-
-// UpdateUserCredentials updates user credentials.
-func (s *UserService) UpdateUserCredentials(user *models.User, credentials *models.Credentials) error {
-	// Implement user credentials update logic
-	return nil
-}
