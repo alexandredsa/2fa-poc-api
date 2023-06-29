@@ -1,4 +1,4 @@
-package handlers_test
+package auth_test
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/models"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/repositories"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/services"
-	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/auth"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -76,7 +76,7 @@ func TestRegisterUserHandler(t *testing.T) {
 	// Create the server handler function
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		// Instantiate the handler with the mock authentication service
-		authHandler := handlers.NewAuthHandler(authService, nil)
+		authHandler := auth.NewHandler(authService, nil)
 
 		// Call the RegisterUser handler function
 		authHandler.Register(w, r)
@@ -89,7 +89,7 @@ func TestRegisterUserHandler(t *testing.T) {
 	assert.Equal(t, http.StatusOK, recorder.Code)
 
 	// Parse the response body
-	var response handlers.RegisterResponse
+	var response auth.RegisterResponse
 	err = json.Unmarshal(recorder.Body.Bytes(), &response)
 	assert.NoError(t, err)
 

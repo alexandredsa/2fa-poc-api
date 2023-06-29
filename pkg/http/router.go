@@ -7,15 +7,17 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
 
-	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/account"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/auth"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/twofa"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/middlewares"
 )
 
 // NewRouter creates a new instance of the HTTP router.
 func NewRouter(
-	authHandler *handlers.AuthHandler,
-	accountDataHandler *handlers.AccountDataHandler,
-	twoFADataHandler *handlers.TwoFADataHandler,
+	authHandler *auth.Handler,
+	accountDataHandler *account.Handler,
+	twoFADataHandler *twofa.Handler,
 ) http.Handler {
 	router := chi.NewRouter()
 

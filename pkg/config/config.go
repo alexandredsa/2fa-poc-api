@@ -17,6 +17,11 @@ type DatabaseConfig struct {
 	DBName   string
 }
 
+// AppRepository
+type AppRepository interface {
+	Migrate(db *gorm.DB) error
+}
+
 // LoadDatabaseConfig loads the database configuration parameters from environment variables.
 func LoadDatabaseConfig() (*DatabaseConfig, error) {
 	host := os.Getenv("DB_HOST")
@@ -50,4 +55,16 @@ func NewDatabaseConnection(config *DatabaseConfig) (*gorm.DB, error) {
 	}
 
 	return db, nil
+}
+
+// MigrateAll performs database migrations for the given repositories
+// using the provided gorm.DB connection.
+func MigrateAll(db *gorm.DB, repositories []AppRepository) error {
+	for _, r := range repositories {
+		if err := r.Migrate(db); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

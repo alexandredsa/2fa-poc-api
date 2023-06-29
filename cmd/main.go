@@ -3,15 +3,24 @@ package main
 import (
 	"log"
 
+	"github.com/joho/godotenv"
+
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/repositories"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/services"
-	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/account"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/auth"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/twofa"
 	"github.com/alexandredsa/2fa-poc-api/pkg/applog"
 	"github.com/alexandredsa/2fa-poc-api/pkg/config"
 	"github.com/alexandredsa/2fa-poc-api/pkg/http"
 )
 
 func main() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	logger := applog.NewLogger("main")
 	// Load the database configuration
 	dbConfig, err := config.LoadDatabaseConfig()
@@ -28,13 +37,17 @@ func main() {
 	userRepository := repositories.NewUserRepository(db)
 	tokenRepository := repositories.NewTokenRepository()
 
+	if err := config.MigrateAll(db, []config.AppRepository{userRepository}); err != nil {
+		log.Fatalf("Failed to setup database: %v", err)
+	}
+
 	authService := services.NewAuthenticationService(*userRepository, *tokenRepository)
 	componentService := services.NewComponentService(*userRepository)
 	userService := services.NewUserService(*userRepository)
 
-	authHandler := handlers.NewAuthHandler(authService, componentService)
-	accountDataHandler := handlers.NewAccountDataHandler(userService)
-	twofaDataHandler := handlers.NewTwoFADataHandler(componentService)
+	authHandler := auth.NewHandler(authService, componentService)
+	accountDataHandler := account.NewHandler(userService)
+	twofaDataHandler := twofa.NewHandler(componentService)
 
 	router := http.NewRouter(authHandler, accountDataHandler, twofaDataHandler)
 

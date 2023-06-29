@@ -1,4 +1,4 @@
-package handlers
+package twofa
 
 import (
 	"net/http"
@@ -7,20 +7,20 @@ import (
 	"github.com/go-chi/chi"
 )
 
-// TwoFADataHandler handles the 2FA data-related HTTP requests.
-type TwoFADataHandler struct {
+// Handler handles the 2FA data-related HTTP requests.
+type Handler struct {
 	ComponentService *services.ComponentService
 }
 
-// NewTwoFADataHandler creates a new instance of the TwoFADataHandler.
-func NewTwoFADataHandler(componentService *services.ComponentService) *TwoFADataHandler {
-	return &TwoFADataHandler{
+// NewHandler creates a new instance of the Handler.
+func NewHandler(componentService *services.ComponentService) *Handler {
+	return &Handler{
 		ComponentService: componentService,
 	}
 }
 
 // UpdateComponentData handles the update of component data.
-func (h *TwoFADataHandler) UpdateComponentData(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) UpdateComponentData(w http.ResponseWriter, r *http.Request) {
 	// Extract the component from the URL path params
 	component := chi.URLParam(r, "component")
 
@@ -36,7 +36,7 @@ func (h *TwoFADataHandler) UpdateComponentData(w http.ResponseWriter, r *http.Re
 }
 
 // ValidateComponentData handles the validation of component data.
-func (h *TwoFADataHandler) ValidateComponentData(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) ValidateComponentData(w http.ResponseWriter, r *http.Request) {
 	// Extract the component from the URL path params
 	component := chi.URLParam(r, "component")
 

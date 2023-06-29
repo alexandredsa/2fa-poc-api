@@ -16,6 +16,10 @@ func NewUserRepository(db *gorm.DB) *UserRepository {
 	}
 }
 
+func (r *UserRepository) Migrate(db *gorm.DB) error {
+	return db.AutoMigrate(&models.User{})
+}
+
 // CreateUser creates a new user in the database.
 func (r *UserRepository) CreateUser(user *models.User) error {
 	// Implement logic to save the user in the database using the provided db connection and GORM

@@ -23,6 +23,7 @@ require (
 	github.com/go-chi/chi v1.5.4
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/google/uuid v1.3.0
+	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/crypto v0.10.0
 	gorm.io/driver/postgres v1.5.2
