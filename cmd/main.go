@@ -6,11 +6,13 @@ import (
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/repositories"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/services"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers"
+	"github.com/alexandredsa/2fa-poc-api/pkg/applog"
 	"github.com/alexandredsa/2fa-poc-api/pkg/config"
 	"github.com/alexandredsa/2fa-poc-api/pkg/http"
 )
 
 func main() {
+	logger := applog.NewLogger("main")
 	// Load the database configuration
 	dbConfig, err := config.LoadDatabaseConfig()
 	if err != nil {
@@ -38,7 +40,7 @@ func main() {
 
 	server := http.NewServer(":8080", router)
 
-	log.Println("Server started on port 8080")
+	logger.Info("Server started on port 8080")
 	if err := server.Start(); err != nil {
 		log.Fatal(err)
 	}
