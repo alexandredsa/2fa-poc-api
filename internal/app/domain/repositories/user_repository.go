@@ -22,13 +22,22 @@ func (r *UserRepository) Migrate(db *gorm.DB) error {
 
 // CreateUser creates a new user in the database.
 func (r *UserRepository) CreateUser(user *models.User) error {
-	// Implement logic to save the user in the database using the provided db connection and GORM
 	err := r.db.Create(user).Error
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func (r *UserRepository) GetUserByID(userID string) (*models.User, error) {
+	user := &models.User{}
+	err := r.db.Where("id = ?", userID).First(user).Error
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // GetUserByUsername retrieves a user by their username from the database.

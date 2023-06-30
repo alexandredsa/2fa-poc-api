@@ -1,8 +1,11 @@
 package services
 
 import (
+	"context"
+
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/models"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/repositories"
+	"github.com/alexandredsa/2fa-poc-api/pkg/notification/notifier"
 	"github.com/google/uuid"     // for generating random IDs
 	"golang.org/x/crypto/bcrypt" // for hashing passwords
 )
@@ -10,14 +13,13 @@ import (
 // AuthenticationService represents a service for authentication-related operations.
 type AuthenticationService struct {
 	userRepository  repositories.UserRepository
-	tokenRepository repositories.TokenRepository
+	notifierFactory notifier.NotifierFactory
 }
 
-// NewAuthenticationService creates a new instance of AuthenticationService.
-func NewAuthenticationService(userRepository repositories.UserRepository, tokenRepository repositories.TokenRepository) *AuthenticationService {
+func NewAuthenticationService(userRepository repositories.UserRepository, notifierFactory notifier.NotifierFactory) *AuthenticationService {
 	return &AuthenticationService{
 		userRepository:  userRepository,
-		tokenRepository: tokenRepository,
+		notifierFactory: notifierFactory,
 	}
 }
 
@@ -62,13 +64,19 @@ func (s *AuthenticationService) AuthenticateUser(loginRequest *models.LoginReque
 }
 
 // RequestTwoFACode requests a 2FA code for a given component.
-func (s *AuthenticationService) RequestTwoFACode(component string) error {
+func (s *AuthenticationService) RequestTwoFACode(ctx context.Context, userID string, component string) error {
 	// Implement 2FA code request logic
-	return nil
+	notifier := s.notifierFactory.NewNotifier(component)
+
+	user, err := s.userRepository.GetUserByID(userID)
+	if err != nil {
+		return err
+	}
+
+	return notifier.SendVerificationCode(ctx, *user)
 }
 
-// ValidateTwoFACode validates a 2FA code.
-func (s *AuthenticationService) ValidateTwoFACode(validation *models.Validation) (*models.Token, error) {
+func (s *AuthenticationService) SendCodeConfirmation(uuserID string, component string) (*models.Token, error) {
 	// Implement 2FA code validation logic
 	return nil, nil
 }

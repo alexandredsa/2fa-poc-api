@@ -8,6 +8,9 @@ import (
 
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/models"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/services"
+	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/middlewares"
+	"github.com/alexandredsa/2fa-poc-api/pkg/httputils"
+	"github.com/go-chi/chi"
 
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
@@ -46,27 +49,27 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 		Phone:    request.Phone,
 	}
 
+	// Hash the user's password before storing it
+	err = HashPassword(user)
+	if err != nil {
+		http.Error(w, "Failed to register user", http.StatusInternalServerError)
+		return
+	}
+
 	// Call the AuthService to create the user
 	createdUser, err := h.authService.RegisterUser(user)
 	if err != nil {
 		http.Error(w, "Failed to register user", http.StatusInternalServerError)
 		return
 	}
+
 	// Prepare the response
 	response := NewRegisterResponse(*createdUser, "Registration successful")
 
-	// Set the response content type to JSON
-	w.Header().Set("Content-Type", "application/json")
-
-	// Write the response JSON to the response writer
-	err = json.NewEncoder(w).Encode(response)
-	if err != nil {
-		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
-		return
-	}
+	// Write the response
+	httputils.WriteJSONResponse(w, response)
 }
 
-// Login handles the login request.
 func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body
 	var requestBody models.LoginRequest
@@ -84,23 +87,14 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Compare the provided password with the stored hashed password
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(requestBody.Password))
+	err = ComparePasswords(user.Password, requestBody.Password)
 	if err != nil {
 		http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 		return
 	}
 
 	// Generate JWT token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
-		"iss": "2fa-poc-api",
-		"exp": time.Now().Add(time.Hour).Unix(),
-		"iat": time.Now().Unix(),
-	})
-
-	// Sign the token with the secret key
-	secretKey := []byte(os.Getenv("JWT_SECRET"))
-	tokenString, err := token.SignedString(secretKey)
+	tokenString, err := GenerateJWTToken(user.ID)
 	if err != nil {
 		http.Error(w, "Failed to generate access token", http.StatusInternalServerError)
 		return
@@ -114,16 +108,57 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		TwoFAValidations: make([]string, 0), // Add the logic to retrieve 2FA validations
 	}
 
-	// Set the response content type to JSON
-	w.Header().Set("Content-Type", "application/json")
+	// Write the response
+	httputils.WriteJSONResponse(w, response)
+}
 
-	// Write the response JSON to the response writer
-	json.NewEncoder(w).Encode(response)
+func HashPassword(user *models.User) error {
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	user.Password = string(hashedPassword)
+	return nil
+}
+
+func ComparePasswords(hashedPassword, password string) error {
+	return bcrypt.CompareHashAndPassword([]byte(hashedPassword), []byte(password))
+}
+
+func GenerateJWTToken(userID string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"sub": userID,
+		"iss": "2fa-poc-api",
+		"exp": time.Now().Add(time.Hour).Unix(),
+		"iat": time.Now().Unix(),
+	})
+
+	secretKey := []byte(os.Getenv("JWT_SECRET"))
+
+	return token.SignedString(secretKey)
 }
 
 // RequestTwoFA handles the request for 2FA code.
 func (h *Handler) RequestTwoFA(w http.ResponseWriter, r *http.Request) {
-	// Implement 2FA request logic
+	// Extract the component from the URL parameter
+	component := chi.URLParam(r, "component")
+
+	ctx := r.Context()
+	// Get the user ID from the request context
+	// (assuming it has been set during authentication)
+	userID := ctx.Value(middlewares.ClaimUserID).(string)
+
+	if err := h.authService.RequestTwoFACode(ctx, userID, component); err != nil {
+		http.Error(w, "Failed to send email 2FA request", http.StatusInternalServerError)
+		return
+	}
+
+	// Return a success response
+	response := map[string]string{
+		"message": "2FA request successful",
+	}
+
+	httputils.WriteJSONResponse(w, response)
 }
 
 // ValidateTwoFA handles the validation of 2FA code.

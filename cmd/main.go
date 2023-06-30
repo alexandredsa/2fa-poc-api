@@ -11,8 +11,10 @@ import (
 	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/auth"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/twofa"
 	"github.com/alexandredsa/2fa-poc-api/pkg/applog"
+	"github.com/alexandredsa/2fa-poc-api/pkg/appredis"
 	"github.com/alexandredsa/2fa-poc-api/pkg/config"
 	"github.com/alexandredsa/2fa-poc-api/pkg/http"
+	"github.com/alexandredsa/2fa-poc-api/pkg/notification/notifier"
 )
 
 func main() {
@@ -35,13 +37,18 @@ func main() {
 	}
 
 	userRepository := repositories.NewUserRepository(db)
-	tokenRepository := repositories.NewTokenRepository()
-
 	if err := config.MigrateAll(db, []config.AppRepository{userRepository}); err != nil {
 		log.Fatalf("Failed to setup database: %v", err)
 	}
 
-	authService := services.NewAuthenticationService(*userRepository, *tokenRepository)
+	redisClient, err := appredis.NewRedisClient()
+	if err != nil {
+		log.Fatalf("Failed to connect to Redis: %v", err)
+	}
+
+	notifierFactory := notifier.NewNotifierFactory(redisClient)
+
+	authService := services.NewAuthenticationService(*userRepository, notifierFactory)
 	componentService := services.NewComponentService(*userRepository)
 	userService := services.NewUserService(*userRepository)
 

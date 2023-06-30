@@ -1,6 +1,7 @@
 package applog
 
 import (
+	"fmt"
 	"log"
 	"os"
 )
@@ -20,6 +21,12 @@ func NewLogger(component string) *Logger {
 // Info logs an informational message.
 func (l *Logger) Info(message string) {
 	l.logger.Println("[INFO]", message)
+}
+
+// Info logs an informational message using variables.
+func (l *Logger) Infof(message string, params ...any) {
+	fMessage := fmt.Sprintf(message, params...)
+	l.logger.Println("[INFO]", fMessage)
 }
 
 // Error logs an error message.

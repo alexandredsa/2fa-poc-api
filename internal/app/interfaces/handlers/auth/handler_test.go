@@ -11,6 +11,7 @@ import (
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/repositories"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/domain/services"
 	"github.com/alexandredsa/2fa-poc-api/internal/app/interfaces/handlers/auth"
+	"github.com/alexandredsa/2fa-poc-api/pkg/notification/notifier"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"gorm.io/driver/sqlite"
@@ -68,10 +69,8 @@ func TestRegisterUserHandler(t *testing.T) {
 	recorder := httptest.NewRecorder()
 
 	userRepository := *repositories.NewUserRepository(db)
-	tokenRepository := *repositories.NewTokenRepository()
-
 	// Create an instance of the mock authentication service
-	authService := services.NewAuthenticationService(userRepository, tokenRepository)
+	authService := services.NewAuthenticationService(userRepository, notifier.NotifierFactory{})
 
 	// Create the server handler function
 	handler := func(w http.ResponseWriter, r *http.Request) {
